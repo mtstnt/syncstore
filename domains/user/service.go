@@ -10,6 +10,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+type userRepository interface {
+	GetByUsername(string) (*User, error)
+	CreateUser(string, string) (*User, error)
+}
+
 type Service struct {
 	repo userRepository
 }

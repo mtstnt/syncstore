@@ -1,8 +1,6 @@
 package helpers
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -14,20 +12,12 @@ func ErrorResponse(ctx *fiber.Ctx, status int, message string) error {
 	})
 }
 
-func ErrorUnauthorizedResponse(ctx *fiber.Ctx) error {
-	return ErrorResponse(
-		ctx,
-		fiber.StatusUnauthorized,
-		"Invalid login credentials",
-	)
-}
-
-func ErrorInternalSystemResponse(ctx *fiber.Ctx, err error) error {
-	return ErrorResponse(
-		ctx,
-		fiber.StatusInternalServerError,
-		fmt.Sprintf("Error occurred: %s", err.Error()),
-	)
+func ErrorResponseFromErr(ctx *fiber.Ctx, err *fiber.Error) error {
+	return ctx.Status(err.Code).JSON(fiber.Map{
+		"result":  false,
+		"message": err.Message,
+		"data":    nil,
+	})
 }
 
 func SuccessResponse(ctx *fiber.Ctx, message string, data any) error {

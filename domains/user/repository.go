@@ -1,8 +1,6 @@
-package auth
+package user
 
 import (
-	"syncstore/helpers"
-
 	"gorm.io/gorm"
 )
 
@@ -19,7 +17,7 @@ func (r Repository) GetByUsername(username string) (*User, error) {
 	r.db.Find(user, "username = ?", username)
 
 	if r.db.Error != nil {
-		return nil, helpers.NewDatabaseError(r.db.Error)
+		return nil, r.db.Error
 	}
 
 	return user, nil
@@ -33,7 +31,7 @@ func (r Repository) CreateUser(username string, hashedPassword string) (*User, e
 
 	r.db.Create(user)
 	if r.db.Error != nil {
-		return nil, helpers.NewDatabaseError(r.db.Error)
+		return nil, r.db.Error
 	}
 
 	return user, nil

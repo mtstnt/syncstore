@@ -2,7 +2,7 @@ package main
 
 import (
 	"log"
-	"syncstore/domains/auth"
+	"syncstore/domains/user"
 
 	"gorm.io/driver/sqlite"
 
@@ -18,12 +18,14 @@ func main() {
 		log.Fatalln("Failed to open database")
 	}
 
-	authHandler := auth.NewHandler(db)
+	db.AutoMigrate(&user.User{})
+
+	userHandler := user.NewHandler(db)
 	// filesHandler := files.NewHandler()
 
 	app.Route("/auth", func(router fiber.Router) {
-		router.Post("/login", authHandler.Login)
-		router.Post("/register", authHandler.Register)
+		router.Post("/login", userHandler.Login)
+		router.Post("/register", userHandler.Register)
 	})
 
 	// app.Route("/folders", func(router fiber.Router) {

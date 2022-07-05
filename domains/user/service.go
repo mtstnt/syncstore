@@ -8,16 +8,15 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type Service struct {
-	repo Repository
+	repo userRepository
 }
 
-func NewService(db *gorm.DB) Service {
+func NewService(r userRepository) Service {
 	return Service{
-		repo: NewRepository(db),
+		repo: r,
 	}
 }
 

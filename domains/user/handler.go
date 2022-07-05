@@ -15,7 +15,7 @@ type Handler struct {
 
 func NewHandler(db *gorm.DB) Handler {
 	return Handler{
-		NewService(db),
+		NewService(NewRepository(db)),
 	}
 }
 

@@ -8,6 +8,11 @@ type Repository struct {
 	db *gorm.DB
 }
 
+type userRepository interface {
+	GetByUsername(string) (*User, error)
+	CreateUser(string, string) (*User, error)
+}
+
 func NewRepository(db *gorm.DB) Repository {
 	return Repository{db}
 }

@@ -8,5 +8,3 @@ Consists of:
 
 Authentication:
 - Might try to implement simple token based auth, stored in memory or in Redis.
-
-Currently deferring tests until im comfortable with the structure.

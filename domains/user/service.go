@@ -2,12 +2,14 @@ package user
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 	"syncstore/helpers"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type userRepository interface {
@@ -31,6 +33,9 @@ func (s Service) Login(username, encodedPassword string) (string, *fiber.Error) 
 		return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 	}
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+		}
 		return "", helpers.MakeError(fiber.StatusInternalServerError, err)
 	}
 
@@ -54,7 +59,12 @@ func (s Service) Register(username, encodedPassword string) (*User, string, *fib
 		return nil, "", helpers.MakeError(fiber.StatusBadRequest, fmt.Errorf("password incorrectly formatted/encoded"))
 	}
 
-	user, err := s.repo.CreateUser(username, string(password))
+	hashedPw, err := bcrypt.GenerateFromPassword([]byte(password), 12)
+	if err != nil {
+		return nil, "", helpers.MakeError(fiber.StatusInternalServerError, err)
+	}
+
+	user, err := s.repo.CreateUser(username, string(hashedPw))
 	if err != nil {
 		return nil, "", helpers.MakeError(fiber.StatusInternalServerError, err)
 	}

@@ -4,6 +4,17 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
+func ParseBody(ctx *fiber.Ctx, v any) error {
+	if err := ctx.BodyParser(&v); err != nil {
+		return ErrorResponse(
+			ctx,
+			fiber.StatusBadRequest,
+			"Invalid request fields",
+		)
+	}
+	return nil
+}
+
 func ErrorResponse(ctx *fiber.Ctx, status int, message string) error {
 	return ctx.Status(status).JSON(fiber.Map{
 		"result":  false,

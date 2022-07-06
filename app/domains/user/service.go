@@ -27,30 +27,30 @@ func NewService(r userRepository) Service {
 	}
 }
 
-func (s Service) Login(username, encodedPassword string) (string, *fiber.Error) {
+func (s Service) Login(username, encodedPassword string) (*User, string, *fiber.Error) {
 	user, err := s.repo.GetByUsername(username)
 	if user == nil {
-		return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+		return nil, "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 	}
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+			return nil, "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 		}
-		return "", helpers.MakeError(fiber.StatusInternalServerError, err)
+		return nil, "", helpers.MakeError(fiber.StatusInternalServerError, err)
 	}
 
 	decodedPassword, err := base64.StdEncoding.DecodeString(encodedPassword)
 	if err != nil {
-		return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+		return nil, "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), decodedPassword); err != nil {
-		return "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
+		return nil, "", helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials"))
 	}
 
 	token := uuid.New().String()
 
-	return token, nil
+	return user, token, nil
 }
 
 func (s Service) Register(username, encodedPassword string) (*User, string, *fiber.Error) {

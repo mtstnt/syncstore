@@ -55,6 +55,7 @@ func TestService_Login(t *testing.T) {
 		name       string
 		s          Service
 		args       args
+		want       *User
 		want1      *fiber.Error
 		shouldFail bool
 	}{
@@ -63,6 +64,7 @@ func TestService_Login(t *testing.T) {
 			s:          NewService(m),
 			args:       args{username: "testUser", encodedPassword: "MTIzNDU2"},
 			shouldFail: false,
+			want:       testUser,
 			want1:      nil,
 		},
 		{
@@ -70,6 +72,7 @@ func TestService_Login(t *testing.T) {
 			s:          NewService(m),
 			args:       args{username: "testUser", encodedPassword: "MTIzNDU2123123213"},
 			shouldFail: true,
+			want:       nil,
 			want1:      helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials")),
 		},
 		{
@@ -77,12 +80,13 @@ func TestService_Login(t *testing.T) {
 			s:          NewService(m),
 			args:       args{username: "tes", encodedPassword: "MTIzNDU2"},
 			shouldFail: true,
+			want:       nil,
 			want1:      helpers.MakeError(fiber.StatusUnauthorized, fmt.Errorf("invalid credentials")),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.s.Login(tt.args.username, tt.args.encodedPassword)
+			u, got, got1 := tt.s.Login(tt.args.username, tt.args.encodedPassword)
 			if tt.shouldFail && got != "" {
 				t.Errorf("Service.Login() got = %v, want empty string", got)
 			} else if !tt.shouldFail && got == "" {
@@ -91,6 +95,10 @@ func TestService_Login(t *testing.T) {
 
 			if !reflect.DeepEqual(got1, tt.want1) {
 				t.Errorf("Service.Login() got1 = %v, want %v", got1, tt.want1)
+			}
+
+			if !tt.shouldFail && !reflect.DeepEqual(u, tt.want) {
+				t.Errorf("Service.Login() got user = %v, want %v", u, tt.want)
 			}
 		})
 	}
@@ -135,6 +143,7 @@ func TestService_Register(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			user, token, err := tt.s.Register(tt.args.username, tt.args.encodedPassword)
+
 			if tt.shouldFail {
 				if len(token) > 0 {
 					t.Errorf("Service.Register() token = %v, want empty token", token)
